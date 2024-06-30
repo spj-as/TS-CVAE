@@ -23,9 +23,6 @@ from utils.eval import (
     final_displacement_error,
 )
 
-
-
-
 class TSCVAE(nn.Module):
     def __init__(self, args: Namespace, n_max_player: int):
         super(TSCVAE, self).__init__()

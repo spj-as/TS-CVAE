@@ -8,13 +8,7 @@ def cli() -> ArgumentParser:
         type=str,
         choices=[
             "preprocess",
-            "preprocess_bsk",
-            "dagnet",
-            "dagnet_wo_cond",
-            "dagnet_w_all",
-            "dagnet_wo_posemb",
-            "dagnet_wo_graph",
-            "dagnet_wo_graph_bsk"
+            "tscvae",
         ],
         help="option",
     )
@@ -31,33 +25,13 @@ def main():
         args = preprocess_cli(parser).parse_args()
         preprocess_main(args)
 
-    elif args.option == "preprocess_bsk":
-        from runs.run_preprocess_bsk import preprocess_cli, preprocess_main
 
-        args = preprocess_cli(parser).parse_args()
-        preprocess_main(args)
-    elif args.option == "dagnet":
-        from runs.run_dagnet import dagnet_cli, dagnet_main
+    elif args.option == "tscvae":
+        from runs.run_tscvae import tscvae_cli, tscvae_main    
 
-    elif args.option == "dagnet_wo_cond":
-        from runs.run_dagnet_wo_cond import dagnet_cli, dagnet_main  
-    
-    elif args.option == "dagnet_w_all":
-        from runs.run_dagnet_w_all import dagnet_cli, dagnet_main    
-
-    elif args.option == "dagnet_wo_posemb":
-        from runs.run_dagnet_wo_posemb import dagnet_cli, dagnet_main    
-
-    elif args.option == "dagnet_wo_graph":
-        from runs.run_dagnet_wo_graph import dagnet_cli, dagnet_main    
-
-        args = dagnet_cli(parser).parse_args()
-        dagnet_main(args)    
-    elif args.option == "dagnet_wo_graph_bsk":
-        from runs.run_dagnet_wo_graph_bsk import dagnet_cli, dagnet_main    
-
-        args = dagnet_cli(parser).parse_args()
-        dagnet_main(args)    
+        args = tscvae_cli(parser).parse_args()
+        tscvae_main(args)    
+   
 
 
 if __name__ == "__main__":
