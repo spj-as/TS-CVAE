@@ -65,7 +65,7 @@ class TSCVAE(nn.Module):
         self.past_encoder = PastEncoder(args)
         self.all_encoder = FutureEncoder(args)
       
-        self.pz_layer = nn.Linear(80, 2 * args.z_dim)
+        self.pz_layer = nn.Linear(944, 2 * args.z_dim)
         self.q_layer = nn.Linear(2 * args.zdim, 2 * args.z_dim)
 
         # Decoders
@@ -343,11 +343,11 @@ class TSCVAE(nn.Module):
         args,
     ):
         batch, timesteps, num_agents, features = traj.shape
-        traj_with_emb = []
-        for i in range(num_agents):
-            out, _ = self.position_emb(traj[:, :, i, :])
-            traj_with_emb.append(out.squeeze(1))
-        traj_with_emb = torch.stack(traj_with_emb)
+        # traj_with_emb = []
+        # for i in range(num_agents):
+        #     out, _ = self.position_emb(traj[:, :, i, :])
+        #     traj_with_emb.append(out.squeeze(1))
+        # traj_with_emb = torch.stack(traj_with_emb)
         
         ##### add positional encoding ######
         pos_input = traj

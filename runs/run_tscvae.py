@@ -267,10 +267,8 @@ def evaluation(
         samples, shot, hit = model.sample(
             traj=all_traj,
             traj_rel=all_traj_rel,
-            group=all_group,
             shot_type_ohe=all_goals_ohe,
             hit_player=all_hit,
-            direction=all_direction,
             args=args
         )
         

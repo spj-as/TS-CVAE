@@ -57,7 +57,7 @@ class FutureEncoder(nn.Module):
 
         self.out_mlp = MLP2(self.model_dim * 2, [128], "relu")
         self.qz_layer = nn.Linear(
-            16 , 2 * self.args.zdim
+            1072 , 2 * self.args.zdim
         )
         initialize_weights(self.qz_layer.modules())
 
