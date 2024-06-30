@@ -137,11 +137,8 @@ class TSCVAE(nn.Module):
         self,
         traj: Tensor,
         traj_rel: Tensor,
-        group: Tensor,
         shot_type_ohe: Tensor,
         hit_player: Tensor,
-        direction:Tensor,
-        mask: bool,
         tf_threshold: float,
         obs_len: int,
         args,
@@ -150,23 +147,23 @@ class TSCVAE(nn.Module):
     ):
 
         batch, timesteps, num_agents, features = traj.shape
-        traj_with_emb = []
-        for i in range(num_agents):
-            out, _ = self.position_emb(traj[:, :, i, :])
-            traj_with_emb.append(out.squeeze(1))
-        traj_with_emb = torch.stack(traj_with_emb)
         
-        ##### add positional encoding ######
-        pos_input = traj
+        traj_with_emb = []
+        # for i in range(num_agents):
+        #     out, _ = self.position_emb(traj[:, :, i, :])
+        #     traj_with_emb.append(out.squeeze(1))
+        # traj_with_emb = torch.stack(traj_with_emb)
+        
+        # ##### add positional encoding ######
+        # pos_input = traj
 
 
-        add_emb = []
-        for i, player_emb in enumerate(traj_with_emb):
-            new_coords = torch.concat((pos_input[:, :, i, :], player_emb), dim=-1)
-            add_emb.append(new_coords)
-        x_emb = torch.stack(add_emb).permute(1, 0, 2, 3)
+        # add_emb = []
+        # for i, player_emb in enumerate(traj):
+        #     new_coords = torch.concat((pos_input[:, :, i, :], player_emb), dim=-1)
+        #     add_emb.append(new_coords)
+        x_emb = traj.permute(0, 2, 1, 3)
         x_emb = x_emb.reshape(-1, x_emb.shape[2], x_emb.shape[3]) # batch *num_agents , time, coor
-
         #### add shot type & coordinate encoding ######
         
         shot_with_emb = []
@@ -195,8 +192,8 @@ class TSCVAE(nn.Module):
         
         traj_rel = traj_rel.permute(0, 2, 1, 3)
         traj_rel = traj_rel.reshape(-1, traj_rel.shape[2], traj_rel.shape[3])
-        
-        emb_feats = torch.concat((x_emb[:,:,:2], traj_with_emb, traj_rel, shot_input, shot_with_emb, hit_input), dim=-1)
+    
+        emb_feats = torch.concat((x_emb, traj_with_emb, traj_rel, shot_input, shot_with_emb, hit_input), dim=-1)
         feats_pos = self.positional_encoding(emb_feats.reshape(-1,num_agents,self.obs_len+self.pred_len, 26), 8).clone().detach().to(args.device)
         feats_pos = feats_pos.reshape(-1,self.obs_len+self.pred_len, feats_pos.shape[-1])
         real_traj = traj.permute(0, 2, 1, 3)
@@ -210,15 +207,6 @@ class TSCVAE(nn.Module):
         ## emb_position + velocity
         past_feats_emb = feats_pos[:, : self.obs_len, :].float() 
         future_feats_emb = feats_pos[:, self.obs_len :, :].float() 
-       
-
-        direction_input = (
-            direction.reshape(timesteps, -1, args.num_agents, 2)
-            .permute(1, 2, 0, 3)
-            .reshape(-1, timesteps, 2)
-            .to(self.device)
-        )
-
         cur_location = feats
         h = torch.zeros(self.n_layers, batch, self.rnn_dim).to(self.device)
 
@@ -350,10 +338,8 @@ class TSCVAE(nn.Module):
         self,
         traj: Tensor,
         traj_rel: Tensor,
-        group: Tensor,
         shot_type_ohe: Tensor,
         hit_player: Tensor,
-        direction:Tensor,
         args,
     ):
         batch, timesteps, num_agents, features = traj.shape
@@ -367,11 +353,11 @@ class TSCVAE(nn.Module):
         pos_input = traj
 
 
-        add_emb = []
-        for i, player_emb in enumerate(traj_with_emb):
-            new_coords = torch.concat((pos_input[:, :, i, :], player_emb), dim=-1)
-            add_emb.append(new_coords)
-        x_emb = torch.stack(add_emb).permute(1, 0, 2, 3)
+        # add_emb = []
+        # for i, player_emb in enumerate(traj_with_emb):
+        #     new_coords = torch.concat((pos_input[:, :, i, :], player_emb), dim=-1)
+        #     add_emb.append(new_coords)
+        x_emb = traj.permute(0, 2, 1, 3)
         x_emb = x_emb.reshape(-1, x_emb.shape[2], x_emb.shape[3]) # batch *num_agents , time, coor
 
        
@@ -386,7 +372,7 @@ class TSCVAE(nn.Module):
         traj_with_emb = torch.stack(traj_with_emb).permute(1,0,2,3)
         traj_with_emb = traj_with_emb.reshape(-1, traj_with_emb.shape[2], traj_with_emb.shape[3])
         shot_with_emb = torch.stack(shot_with_emb).permute(1,0,2,3)
-        shot_with_emb =shot_with_emb.reshape(-1, shot_with_emb.shape[2], shot_with_emb.shape[3])
+        shot_with_emb = shot_with_emb.reshape(-1, shot_with_emb.shape[2], shot_with_emb.shape[3])
 
         shot_input = (
             shot_type_ohe.permute(0, 2, 1, 3)
@@ -403,7 +389,7 @@ class TSCVAE(nn.Module):
         
         traj_rel = traj_rel.permute(0, 2, 1, 3)
         traj_rel = traj_rel.reshape(-1, traj_rel.shape[2], traj_rel.shape[3])
-        emb_feats = torch.concat((x_emb[:,:,:2], traj_with_emb, traj_rel, shot_input, shot_with_emb, hit_input), dim=-1)
+        emb_feats = torch.concat((x_emb[:,:,:], traj_with_emb, traj_rel, shot_input, shot_with_emb, hit_input), dim=-1)
         feats_pos = self.positional_encoding(emb_feats.reshape(-1,num_agents,self.obs_len+self.pred_len, 26), 8).clone().detach().to(args.device)
         feats_pos = feats_pos.reshape(-1,self.obs_len+self.pred_len, feats_pos.shape[-1])
         real_traj = traj.permute(0, 2, 1, 3)
@@ -417,15 +403,6 @@ class TSCVAE(nn.Module):
 
         ## emb_position + velocity
         past_feats_emb = feats_pos[:, : self.obs_len, :].float() 
-        
-
-
-        direction_input = (
-            direction.reshape(timesteps, -1, args.num_agents, 2)
-            .permute(1, 2, 0, 3)
-            .reshape(-1, timesteps, 2)
-            .to(self.device)
-        )
 
         cur_location = feats[:, self.obs_len - 1]
         cur_shot = shot_input[:, self.obs_len - 1]
@@ -435,7 +412,6 @@ class TSCVAE(nn.Module):
         h = torch.zeros(self.n_layers, batch, self.rnn_dim).to(self.device)
 
         ########################## CVAE encoder ##########################
-        past_direction = direction_input[:, : self.obs_len, :]
         past_feats_emb = past_feats_emb
         past_feature = self.past_encoder(
             past_feats_emb,

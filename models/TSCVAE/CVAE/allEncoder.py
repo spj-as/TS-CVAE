@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from ..TCN.tcn_model import  TemporalConvNet
+from ..TCN.tcn_layer import  TemporalConvNet
 from ...ConvAutoEncoder.gat_layer import GATLayer, StandardGAT
 import dgl
 

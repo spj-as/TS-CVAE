@@ -12,7 +12,7 @@ class BadmintonDataset(Dataset):
         self,
         mode: Literal["train", "test"],
         root: str = None,
-        n_agents: int = 5,
+        n_agents: int = 4,
         obs_len: int = 10,
         pred_len: int = 2,
     ):
@@ -27,27 +27,18 @@ class BadmintonDataset(Dataset):
 
         displacements = np.load(join(self.data_dir, mode, "displacements.npy"), allow_pickle=True)
         velocity = np.load(join(self.data_dir, mode, "velocity.npy"), allow_pickle=True)
-        group = np.load(join(self.data_dir, mode, "group.npy"), allow_pickle=True)
         goals = np.load(join(self.data_dir, mode, "goals.npy"), allow_pickle=True)
         hits = np.load(join(self.data_dir, mode, "hit.npy"), allow_pickle=True)
-        direction = np.load(join(self.data_dir, mode, "direction.npy"), allow_pickle=True)
 
 
         num_seqs = displacements.shape[1] // self.n_agents
-        # idxs = [idx for idx in range(0, (num_seqs * self.n_agents) + n_agents, n_agents)]
-        # seq_start_end = [[start, end] for start, end in zip(idxs[:], idxs[1:])]
-        
-
-        # self.num_samples = len(seq_start_end)
-
+      
         self.num_samples = displacements.shape[0]
 
         self.displacements = torch.from_numpy(displacements).type(torch.float)
         self.velocity = torch.from_numpy(velocity).type(torch.float)
-        self.group = torch.from_numpy(group).type(torch.float)
         self.goals = torch.from_numpy(goals).type(torch.float)
         self.hits = torch.from_numpy(hits).type(torch.float)
-        self.direction = torch.from_numpy(direction).type(torch.float)
 
     def __len__(self) -> int:
         return self.num_samples
@@ -62,10 +53,8 @@ class BadmintonDataset(Dataset):
         out = [
             self.displacements[idx],
             self.velocity[idx],
-            self.group[idx],
             self.goals[idx],
             self.hits[idx],
-            self.direction[idx],
         ]
         return tuple(out)
 

@@ -47,12 +47,6 @@ class BadmintonPreprocessor:
         displacements = normalize(displacements, nor_max, nor_min)
         df[self.player_loc_cols] = displacements
 
-        hit_loc = df[self.hit_loc].values  # 位移
-        nor_max = hit_loc.max()
-        nor_min = hit_loc.min()
-      
-        hit_loc = normalize(hit_loc, nor_max, nor_min)
-        df[self.hit_loc] = hit_loc
 
         displacements = df[["player_A_x",
             "player_A_y",
@@ -147,8 +141,7 @@ class BadmintonPreprocessor:
 
         # hit_players
         hit_player = self.hit_player_enc.fit_transform(df[["player"]].values).toarray()
-
-      
+        print(df.player.unique())
 
         unique_rallies = np.unique(df["rally_id"])
         new_locs = []

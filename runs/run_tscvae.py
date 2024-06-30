@@ -8,7 +8,7 @@ from os.path import join
 from utils.seed import set_seed
 from utils.dataset import get_badminton_datasets
 from utils.checkpoint import save_checkpoint
-from utils.eval import average_displacement_error, final_displacement_error, mean_square_error, plot, plot_left, plot_right
+from utils.eval import  average_displacement_error, final_displacement_error, mean_square_error, plot, plot_left, plot_right, average_displacement_error_cal
 from models.TSCVAE.tscvae import TSCVAE
 from torch.utils.tensorboard import SummaryWriter
 import logging
@@ -122,10 +122,8 @@ def train(
         (
             all_traj,
             all_traj_rel,
-            all_group,
             all_goals_ohe,
             all_hit,
-            all_direction,
         ) = data
 
       
@@ -134,11 +132,8 @@ def train(
         total_loss, loss_pred, loss_kl, loss_ade, loss_fde, loss_mse, loss_ce_shot, loss_ce_hit = model.forward(
             traj=all_traj,
             traj_rel=all_traj_rel,
-            group = all_group,
             shot_type_ohe=all_goals_ohe,
             hit_player=all_hit,
-            direction = all_direction,
-            mask=True,
             tf_threshold=tf_threshold,
             obs_len=args.obs_len,
             args=args,
@@ -185,19 +180,12 @@ def train(
     writer.add_scalar("train/avg_ce_shot", avg_ce_shot, epoch)
     writer.add_scalar("train/avg_ce_hit", avg_ce_hit, epoch)
 
-    # writer.add_scalar("train/acc", avg_acc, epoch)
-    # writer.add_scalar("train/precision", avg_precision, epoch)
-    # writer.add_scalar("train/recall", avg_recall, epoch)
+
     writer.add_scalar("train/beta", beta, epoch)
     writer.add_scalar("train/tf_threshold", tf_threshold, epoch)
 
     logging.info(f"Epoch {epoch} (Train) | ADE: {avg_ade:.4f} | FDE: {avg_fde:.4f} | MSE: {avg_mse:.4f} | Loss: {avg_loss:.4f} | KLD: {avg_kld:.4f} | NLL: {avg_nll:.4f} | CE: {avg_ce_shot:.4f} | CE Hit: {avg_ce_hit:.4f} ")  # fmt: skip
-    # logging.info(f"Epoch {epoch} (Train) | Acc: {avg_acc:.4f} | Precision: {avg_precision:.4f} | Recall: {avg_recall:.4f} ")  # fmt: skip
-    # logging.info(f"Epoch {epoch} (Train) | ADE: {avg_ade:.4f} | FDE: {avg_fde:.4f} | MSE: {avg_mse:.4f}")  # fmt: skip
-
-    # logging.info(f"Epoch {epoch} (Train) | Loss: {avg_loss:.4f} | KLD: {avg_kld:.4f} | NLL: {avg_nll:.4f} ")  # fmt: skip
-
-    # logging.info(f"Epoch {epoch} (Train) | Beta: {beta:.4f} | TF Threshold: {tf_threshold:.4f} ")  # fmt: skip
+  
     logging.info("Epoch [{}], time elapsed: {:3f}".format(epoch, time() - start_time))
 
 
@@ -259,30 +247,11 @@ def evaluation(
         (
             all_traj,
             all_traj_rel,
-            all_group,
             all_goals_ohe,
             all_hit,
-            all_direction,
         ) = data
 
       
-        # total_loss, loss_pred, loss_kl, loss_ade, loss_fde, loss_mse,cross_entropy_shot, cross_entropy_hit = model.forward(
-        #     traj=all_traj,
-        #     traj_rel=all_traj_rel,
-        #     shot_type_ohe=all_goals_ohe,
-        #     hit_player=all_hit,
-        #     seq_start_end=seq_start_end,
-        #     adj_out=adj_out,
-        #     mask=True,
-        #     tf_threshold=tf_threshold,
-        #     obs_len=args.obs_len,
-        #     args=args
-        # )
-        # Compute loss
-        # loss = total_loss
-
-        # predict trajectory from latest hidden state
-        # samples_rel shape: (pred_seq_len, n_agents, batch, xy)
 
         min_ade = float("Inf")
         min_fde = None
@@ -374,62 +343,26 @@ def evaluation(
         )
        
 
-        # plotwPast(
-        #     gt_loc=min_plot_GT,
-        #     pred_loc=min_plot_pred,
-        #     gt_past=past_traj_gt,
-        #     folder=pic_dir,
-        #     epoch=epoch,
-        #     batch_idx=batch_idx,
-        #     pred_len=args.pred_len,
-        #     obs_len=args.obs_len
-        # )
 
         ades.append(min_ade)
         fdes.append(min_fde)
         mses.append(min_mse)
         ce_shot.append(min_ce_shot)
         ce_hit.append(min_ce_hit)
-        
-    #     ADE1.append(ADE.min(axis=0)[0])
-    #     ADE2.append(ADE.min(axis=0)[1])
-    #     ADE3.append(ADE.min(axis=0)[2])
-    #     ADE4.append(ADE.min(axis=0)[3])
-    #     ADE5.append(ADE.min(axis=0)[4])
-   
-    # ADE1 = [torch.tensor(item) if not isinstance(item, torch.Tensor) else item for item in ADE1]
-    # ADE2 = [torch.tensor(item) if not isinstance(item, torch.Tensor) else item for item in ADE2]
-    # ADE3 = [torch.tensor(item) if not isinstance(item, torch.Tensor) else item for item in ADE3]
-    # ADE4 = [torch.tensor(item) if not isinstance(item, torch.Tensor) else item for item in ADE4]
-    # ADE5 = [torch.tensor(item) if not isinstance(item, torch.Tensor) else item for item in ADE5]
-      
-    # Compute mean metrics
-    
+ 
     avg_ade = torch.sum(torch.stack(ades)) / len(loader)
     avg_fde = torch.sum(torch.stack(fdes)) / len(loader)
     avg_mse = torch.sum(torch.stack(mses)) / len(loader)
     avg_ce_shot = torch.sum(torch.stack(ce_shot)) / len(loader)
     avg_ce_hit = torch.sum(torch.stack(ce_hit)) / len(loader)
 
-    # ADE1 = torch.sum(torch.stack(ADE1)) / len(loader)
-    # ADE2 = torch.sum(torch.stack(ADE2)) / len(loader)
-    # ADE3 = torch.sum(torch.stack(ADE3)) / len(loader)
-    # ADE4 = torch.sum(torch.stack(ADE4)) / len(loader)
-    # ADE5 = torch.sum(torch.stack(ADE5)) / len(loader)
 
     writer.add_scalar("test/ade", avg_ade, epoch//args.eval_every)
     writer.add_scalar("test/fde", avg_fde, epoch//args.eval_every)
     writer.add_scalar("test/mse", avg_mse, epoch//args.eval_every)
     writer.add_scalar("test/ce_shot", avg_ce_shot, epoch//args.eval_every)
     writer.add_scalar("test/ce_hit", avg_ce_hit, epoch//args.eval_every)
-    # writer.add_scalar("test/ADE1", ADE1, epoch//args.eval_every)
-    # writer.add_scalar("test/ADE2", ADE2, epoch//args.eval_every)
-    # writer.add_scalar("test/ADE3", ADE3, epoch//args.eval_every)
-    # writer.add_scalar("test/ADE4", ADE4, epoch//args.eval_every)
-    # writer.add_scalar("test/ADE5", ADE5, epoch//args.eval_every)
-
-
-    # return  avg_ade, avg_fde, avg_mse, avg_ce_shot, avg_ce_hit, ADE1, ADE2, ADE3, ADE4, ADE5
+ 
 
     return  avg_ade, avg_fde, avg_mse, avg_ce_shot, avg_ce_hit
 
@@ -508,7 +441,6 @@ def tscvae_main(args: Namespace):
                     tf_threshold=tf_threshold,
                 )
                 logging.info(f"Epoch {epoch} (Val) | ADE: {ade:.4f} | FDE: {fde:.4f} | MSE: {mse:.4f}| CE shot: {ce_shot:.4f}| CE hit: {ce_hit:.4f}  ")  # fmt: skip
-                # logging.info(f"Epoch {epoch} (Val) | ADE1: {ADE1:.4f} | ADE2: {ADE2:.4f} | ADE3: {ADE3:.4f}| ADE4: {ADE4:.4f}| ADE5: {ADE5:.4f}")  # fmt: skip
 
                 if 0 <= ade < best_ade:
                     best_ade = ade
