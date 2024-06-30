@@ -8,7 +8,7 @@ from os.path import join
 from utils.seed import set_seed
 from utils.dataset import get_badminton_datasets
 from utils.checkpoint import save_checkpoint
-from utils.eval import relative_to_abs, average_displacement_error, final_displacement_error, mean_square_error, plot, plot_left, plot_right, average_displacement_error_cal
+from utils.eval import average_displacement_error, final_displacement_error, mean_square_error, plot, plot_left, plot_right
 from models.TSCVAE.tscvae import TSCVAE
 from torch.utils.tensorboard import SummaryWriter
 import logging
