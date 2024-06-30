@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 
-
-def cli() -> ArgumentParser:
+def cli():
     parser = ArgumentParser()
     parser.add_argument(
         "option",
@@ -25,9 +24,8 @@ def main():
         args = preprocess_cli(parser).parse_args()
         preprocess_main(args)
 
-
     elif args.option == "tscvae":
-        from runs.run_tscvae import tscvae_cli, tscvae_main    
+        from runs.run_tscvae import tscvae_cli, tscvae_main 
 
         args = tscvae_cli(parser).parse_args()
         tscvae_main(args)    
