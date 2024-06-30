@@ -5,11 +5,11 @@ import torch.nn.functional as F
 from argparse import Namespace
 from models.ShotTypeEmb.auto_encoder import ShotTypeEmb
 from models.ConvAutoEncoder.gat_layer import GATLayer, StandardGAT
-from models.Dagnet.TCN.tcn_layer import TemporalConvNet
-from models.Dagnet.CVAE.allEncoder import FutureEncoder
-from models.Dagnet.CVAE.pastEncoder import PastEncoder
-from models.Dagnet.CVAE.Decoder import TrajDecoder
-from models.Dagnet.CVAE.Distribution import Normal
+from models.TSCVAE.TCN.tcn_layer import TemporalConvNet
+from models.TSCVAE.CVAE.allEncoder import FutureEncoder
+from models.TSCVAE.CVAE.pastEncoder import PastEncoder
+from models.TSCVAE.CVAE.Decoder import TrajDecoder
+from models.TSCVAE.CVAE.Distribution import Normal
 import numpy as np
 import random
 import dgl
@@ -26,9 +26,9 @@ from utils.eval import (
 
 
 
-class DAGNet(nn.Module):
+class TSCVAE(nn.Module):
     def __init__(self, args: Namespace, n_max_player: int):
-        super(DAGNet, self).__init__()
+        super(TSCVAE, self).__init__()
 
         self.n_max_player: int = n_max_player
         self.n_layers: int = args.n_layers
