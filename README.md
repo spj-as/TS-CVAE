@@ -4,7 +4,7 @@
 
 1. Clone the repo
     ```bash
-    git clone https://github.com/spj-as/doubles_movement.git
+    git clone https://github.com/spj-as/TS-CVAE.git
     ```
 2. Create virtual env
    ```bash
