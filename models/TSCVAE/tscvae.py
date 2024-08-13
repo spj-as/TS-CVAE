@@ -64,6 +64,7 @@ class TSCVAE(nn.Module):
         # Encoders
         self.past_encoder = PastEncoder(args)
         self.all_encoder = FutureEncoder(args)
+        self.nn = nn.Linear(24, 8)
       
         self.pz_layer = nn.Linear(944, 2 * args.z_dim)
         self.q_layer = nn.Linear(2 * args.zdim, 2 * args.z_dim)
@@ -92,46 +93,7 @@ class TSCVAE(nn.Module):
         return loss_clamp
 
 
-    def generate_positional_encodings(self, length, depth):
-        """
-        Generate positional encodings for a sequence.
-
-        Parameters:
-        - length: The length of the sequence.
-        - depth: The depth of the positional encoding.
-
-        Returns:
-        - A numpy array of shape (length, depth) containing the positional encodings.
-        """
-        assert depth % 2 == 0, "Depth must be an even number."
-        
-        position = np.arange(length)[:, np.newaxis]
-        div_term = np.exp(np.arange(0, depth, 2) * -(np.log(10000.0) / depth))
-        positional_encoding = np.zeros((length, depth))
-        positional_encoding[:, 0::2] = np.sin(position * div_term)
-        positional_encoding[:, 1::2] = np.cos(position * div_term)
-        
-        return positional_encoding
-
-    def positional_encoding(self, input, depth):
-        """
-        Apply positional encoding to an input tensor with shape [batch_size, agent_num, length, 2].
-        
-        Parameters:
-        - input_tensor: A numpy array of shape (batch_size, agent_num, length, 2).
-        - depth: The depth of the positional encoding to be applied.
-        
-        Returns:
-        - A numpy array with positional encodings applied.
-        """
-        batch_size, agent_num, length, _ = input.shape
-        pe = self.generate_positional_encodings(length, depth)  
-        pe_expanded = pe[np.newaxis, np.newaxis, :, :]
-        pe_expanded = np.repeat(pe_expanded, batch_size, axis=0)
-        pe_expanded = np.repeat(pe_expanded, agent_num, axis=1)
-        
-        input_with_pe = torch.tensor(pe_expanded)       
-        return input_with_pe
+   
 
     def forward(
         self,
@@ -173,10 +135,10 @@ class TSCVAE(nn.Module):
             shot_with_emb.append(shot_out.squeeze(1))
             traj_with_emb.append(locs_out.squeeze(1))
         traj_with_emb = torch.stack(traj_with_emb).permute(1,0,2,3)
-        traj_with_emb =traj_with_emb.reshape(-1, traj_with_emb.shape[2], traj_with_emb.shape[3])
+        traj_with_emb = traj_with_emb.reshape(-1, traj_with_emb.shape[2], traj_with_emb.shape[3])
         shot_with_emb = torch.stack(shot_with_emb).permute(1,0,2,3)
-        shot_with_emb = shot_with_emb.reshape(-1, shot_with_emb.shape[2], shot_with_emb.shape[3])
-        
+        shot_with_emb =shot_with_emb.reshape(-1, shot_with_emb.shape[2], shot_with_emb.shape[3])
+
         shot_input = (
             shot_type_ohe.permute(0, 2, 1, 3)
             .reshape(-1, timesteps, args.s_dim)
@@ -372,7 +334,7 @@ class TSCVAE(nn.Module):
         traj_with_emb = torch.stack(traj_with_emb).permute(1,0,2,3)
         traj_with_emb = traj_with_emb.reshape(-1, traj_with_emb.shape[2], traj_with_emb.shape[3])
         shot_with_emb = torch.stack(shot_with_emb).permute(1,0,2,3)
-        shot_with_emb = shot_with_emb.reshape(-1, shot_with_emb.shape[2], shot_with_emb.shape[3])
+        shot_with_emb =shot_with_emb.reshape(-1, shot_with_emb.shape[2], shot_with_emb.shape[3])
 
         shot_input = (
             shot_type_ohe.permute(0, 2, 1, 3)
