@@ -1,66 +1,87 @@
-### TS-CVAE: Accurate Player Movement Predictions by Leveraging Team and Opponent Dynamics for Doubles Badminton
+### TS-CVAE: Accurate Player Movement Predictions by Leveraging Team and Opponent Dynamics in Doubles Badminton
 
 ## Overview
-TS-CVAE incorporates Team GAT, which leverages team influence graph over a few strokes to capture rapidly changing team strategies, and Opponent GAT, which holistically analyzes interactions between opposing players.
+TS-CVAE incorporates two key components to enhance prediction accuracy: **Team GAT** and **Opponent GAT**. The **Team GAT** captures rapidly changing team strategies by leveraging a team influence graph. Meanwhile, the **Opponent GAT** holistically analyzes interactions between opposing players to understand the dynamics in doubles badminton.
+
 ## Setup
 
-1. Clone the repo
+1. **Clone the repository**
     ```bash
     git clone https://github.com/spj-as/TS-CVAE.git
     ```
-2. Create virtual env
+
+2. **Create a virtual environment**
    ```bash
    python3 -m venv venv
    ```
-3. Activate virtual env
+
+3. **Activate the virtual environment**
    ```bash
    source venv/bin/activate
    ```
-4. Install requirements
+
+4. **Install required packages**
    ```bash
    pip install -r requirements.txt
    ```
-5. Generate train and test data
+
+5. **Generate training and testing data**
    ```bash
    python main.py preprocess
    ```
 
-## Train
+## Training the Model
 
-1. Train gagnet model with graph attention and default parameters
+1. **Train the model with default parameters**
     ```bash
-   
+    python main.py tscvae --name experiment_1 
     ```
 
 ## Dataset Description
 
-> You should run `python main.py preprocess` to generate train and test data. The data will be saved in `data` folder.
+After running `python main.py preprocess`, the generated training and testing datasets will be saved in the `data` folder. The datasets have the following shapes:
 
-- Shape of train data
+- **Training Data:**
   
-  displacements
-      (train_len, 12, 4, 2)
+  - **Displacements**: `(train_len, 12, 4, 2)`
   
-  velocity
-      (train_len, 12, 4, 2)
+  - **Velocity**: `(train_len, 12, 4, 2)`
   
-  goals (shot type)
-      (train_len, 12, 4, 16)
+  - **Goals (Shot Type)**: `(train_len, 12, 4, 16)`
   
-  hit (hitting player)
-      (train_len, 12, 4, 4)
+  - **Hit (Hitting Player)**: `(train_len, 12, 4, 4)`
+
+- **Testing Data:**
+
+  - **Displacements**: `(test_len, 12, 4, 2)`
   
-- Shape of test data
+  - **Velocity**: `(test_len, 12, 4, 2)`
   
-  displacements
-      (test_len, 12, 4, 2)
+  - **Goals (Shot Type)**: `(test_len, 12, 4, 16)`
   
-  velocity
-      (test_len, 12, 4, 2)
-  
-  goals (shot type)
-      (test_len, 12, 4, 16)
-  
-  hit (hitting player)
-      (test_len, 12, 4, 4)
-  
+  - **Hit (Hitting Player)**: `(test_len, 12, 4, 4)`
+
+## Randomness Handling
+
+To introduce controlled randomness, the `Normal` class's `rsample` method is utilized for sampling:
+
+```python
+class Normal:
+    def __init__(self, mu=None, logvar=None, params=None):
+        super().__init__()
+        if params is not None:
+            self.mu, self.logvar = torch.chunk(params, chunks=2, dim=-1)
+        else:
+            assert mu is not None
+            assert logvar is not None
+            self.mu = mu
+            self.logvar = logvar
+        self.sigma = torch.exp(0.5 * self.logvar)
+
+    def rsample(self):
+        eps = torch.randn_like(self.sigma)
+        return self.mu + eps * self.sigma
+
+    def sample(self):
+        return self.rsample()
+```
