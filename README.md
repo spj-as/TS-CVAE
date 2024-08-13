@@ -35,7 +35,21 @@
 > You should run `python main.py preprocess` to generate train and test data. The data will be saved in `data` folder.
 
 - Shape of train data
-  
-
+  displacements
+      (train_len, 12, 4, 2)
+  velocity
+      (train_len, 12, 4, 2)
+  goals (shot type)
+      (train_len, 12, 4, 16)
+  hit (hitting player)
+      (train_len, 12, 4, 4)
 - Shape of test data
+  displacements
+      (test_len, 12, 4, 2)
+  velocity
+      (test_len, 12, 4, 2)
+  goals (shot type)
+      (test_len, 12, 4, 16)
+  hit (hitting player)
+      (test_len, 12, 4, 4)
   
