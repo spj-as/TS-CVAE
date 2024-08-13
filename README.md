@@ -1,5 +1,7 @@
-### TS-CVAE
+### TS-CVAE: Accurate Player Movement Predictions by Leveraging Team and Opponent Dynamics for Doubles Badminton
 
+## Overview
+TS-CVAE incorporates Team GAT, which leverages team influence graph over a few strokes to capture rapidly changing team strategies, and Opponent GAT, which holistically analyzes interactions between opposing players.
 ## Setup
 
 1. Clone the repo
