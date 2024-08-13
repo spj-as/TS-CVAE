@@ -457,3 +457,24 @@ def tscvae_main(args: Namespace):
     elif args.mode == "eval":
         assert args.checkpoint is not None, "checkpoint path is required for testing"
         evaluation(args)
+        checkpoint: dict[str] = torch.load(args.checkpoint)
+        
+        model = TSCVAE(args=args, n_max_player=n_max_agents)
+        model.load_state_dict(checkpoint["model"])
+        model = model.to(args.device)
+        
+        optimizer = optim.Adam(model.parameters(), lr=args.lr)
+        optimizer.load_state_dict(checkpoint["optimizer"])
+
+        ade, fde, mse, ce_shot, ce_hit = evaluation(
+            args,
+            writer=None,  
+            epoch=checkpoint["epoch"],
+            model=model,
+            loader=test_loader,
+            pic_dir=pic_dir,
+            beta=1.0,  
+            tf_threshold=1.0  
+        )
+
+        logging.info(f"Evaluation | ADE: {ade:.4f} | FDE: {fde:.4f} | MSE: {mse:.4f} | CE shot: {ce_shot:.4f} | CE hit: {ce_hit:.4f}")  # fmt: skip
