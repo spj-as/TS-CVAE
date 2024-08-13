@@ -354,13 +354,13 @@ def evaluation(
     avg_ce_shot = torch.sum(torch.stack(ce_shot)) / len(loader)
     avg_ce_hit = torch.sum(torch.stack(ce_hit)) / len(loader)
 
-
-    writer.add_scalar("test/ade", avg_ade, epoch//args.eval_every)
-    writer.add_scalar("test/fde", avg_fde, epoch//args.eval_every)
-    writer.add_scalar("test/mse", avg_mse, epoch//args.eval_every)
-    writer.add_scalar("test/ce_shot", avg_ce_shot, epoch//args.eval_every)
-    writer.add_scalar("test/ce_hit", avg_ce_hit, epoch//args.eval_every)
- 
+    if writer != None:
+        writer.add_scalar("test/ade", avg_ade, epoch//args.eval_every)
+        writer.add_scalar("test/fde", avg_fde, epoch//args.eval_every)
+        writer.add_scalar("test/mse", avg_mse, epoch//args.eval_every)
+        writer.add_scalar("test/ce_shot", avg_ce_shot, epoch//args.eval_every)
+        writer.add_scalar("test/ce_hit", avg_ce_hit, epoch//args.eval_every)
+    
 
     return  avg_ade, avg_fde, avg_mse, avg_ce_shot, avg_ce_hit
 
@@ -477,4 +477,4 @@ def tscvae_main(args: Namespace):
             tf_threshold=1.0  
         )
 
-        logging.info(f"Evaluation | ADE: {ade:.4f} | FDE: {fde:.4f} | MSE: {mse:.4f} | CE shot: {ce_shot:.4f} | CE hit: {ce_hit:.4f}")  # fmt: skip
+        print(f"Evaluation | ADE: {ade:.4f} | FDE: {fde:.4f} | MSE: {mse:.4f} | CE shot: {ce_shot:.4f} | CE hit: {ce_hit:.4f}")  # fmt: skip
