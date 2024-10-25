@@ -85,3 +85,5 @@ class Normal:
     def sample(self):
         return self.rsample()
 ```
+## Experiment Setting 
+In the framework, the dimensions of the hidden states and the latent variables are 8 and 16, respectively. The learning rate is $10^{-3}$ and the batch size is 32. $\lambda$ is set to 1. For \pretrain, the learning rate is set to $5\times 10^{-4}$ and the batch size is 1024. All baselines are trained on a machine of AMD Ryzen 7 5700X 8-Core CPU and an Nvidia RTX 3060 Ti GPU.
