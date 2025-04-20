@@ -29,7 +29,7 @@ TS-CVAE incorporates two key components to enhance prediction accuracy: **Team G
    ```bash
    python main.py preprocess
    ```
-6. **Add shottypeEmbedding in weights file
+6. **Add shottypeEmbedding in weights file**
 
 ## Training the Model
 
