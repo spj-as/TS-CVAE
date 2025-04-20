@@ -64,7 +64,7 @@ class TSCVAE(nn.Module):
         # Encoders
         self.past_encoder = PastEncoder(args)
         self.all_encoder = FutureEncoder(args)
-        self.nn = nn.Linear(24, 8)
+        self.nn = nn.Linear(26, 8)
       
         self.pz_layer = nn.Linear(944, 2 * args.z_dim)
         self.q_layer = nn.Linear(2 * args.zdim, 2 * args.z_dim)
@@ -156,11 +156,11 @@ class TSCVAE(nn.Module):
         traj_rel = traj_rel.reshape(-1, traj_rel.shape[2], traj_rel.shape[3])
     
         emb_feats = torch.concat((x_emb, traj_with_emb, traj_rel, shot_input, shot_with_emb, hit_input), dim=-1)
-        feats_pos = self.positional_encoding(emb_feats.reshape(-1,num_agents,self.obs_len+self.pred_len, 26), 8).clone().detach().to(args.device)
+        feats_pos = self.nn(emb_feats.reshape(-1,num_agents,self.obs_len+self.pred_len, 26), 8).clone().detach().to(args.device)
         feats_pos = feats_pos.reshape(-1,self.obs_len+self.pred_len, feats_pos.shape[-1])
         real_traj = traj.permute(0, 2, 1, 3)
         real_traj = real_traj.reshape(-1, real_traj.shape[2],  real_traj.shape[3])
-
+        
 
         feats = torch.concat((real_traj, traj_rel), dim=-1)
         past_traj = real_traj[:, : self.obs_len, :]
@@ -352,7 +352,7 @@ class TSCVAE(nn.Module):
         traj_rel = traj_rel.permute(0, 2, 1, 3)
         traj_rel = traj_rel.reshape(-1, traj_rel.shape[2], traj_rel.shape[3])
         emb_feats = torch.concat((x_emb[:,:,:], traj_with_emb, traj_rel, shot_input, shot_with_emb, hit_input), dim=-1)
-        feats_pos = self.positional_encoding(emb_feats.reshape(-1,num_agents,self.obs_len+self.pred_len, 26), 8).clone().detach().to(args.device)
+        feats_pos = self.nn(emb_feats.reshape(-1,num_agents,self.obs_len+self.pred_len, 26), 8).clone().detach().to(args.device)
         feats_pos = feats_pos.reshape(-1,self.obs_len+self.pred_len, feats_pos.shape[-1])
         real_traj = traj.permute(0, 2, 1, 3)
         real_traj = real_traj.reshape(-1, real_traj.shape[2],  real_traj.shape[3])
